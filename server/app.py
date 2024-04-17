@@ -20,9 +20,27 @@ def get_restaurants():
 def get_restaurant(id):
     restaurant = Restaurant.query.get(id)
     if restaurant:
-        return jsonify(restaurant.to_dict(only=('id', 'name', 'address', 'restaurant_pizzas')))
+        restaurant_data = {
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "address": restaurant.address,
+            "restaurant_pizzas": [
+                {
+                    "id": rp.id,
+                    "pizza": {
+                        "id": rp.pizza.id,
+                        "name": rp.pizza.name,
+                        "ingredients": rp.pizza.ingredients
+                    },
+                    "price": rp.price,
+                    "restaurant_id": rp.restaurant_id
+                } for rp in restaurant.restaurant_pizzas
+            ]
+        }
+        return jsonify(restaurant_data)
     else:
         return jsonify({"error": "Restaurant not found"}), 404
+
 
 @app.route('/restaurants/<int:id>', methods=['DELETE'])
 def delete_restaurant(id):
